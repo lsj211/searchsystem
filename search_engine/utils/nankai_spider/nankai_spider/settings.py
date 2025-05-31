@@ -92,8 +92,8 @@ ROBOTSTXT_OBEY = True
 # Set settings whose default value is deprecated to a future-proof value
 FEED_EXPORT_ENCODING = "utf-8"
 ITEM_PIPELINES = {
-    'myproject.pipelines.MySQLPipeline': 1,           # MySQL pipeline，优先级1
-    'myproject.pipelines.ElasticsearchPipeline': 2,   # Elasticsearch pipeline，优先级2
+    'nankai_spider.pipelines.MySQLPipeline': 1,           # MySQL pipeline，优先级1
+    'nankai_spider.pipelines.ElasticsearchPipeline': 2,   # Elasticsearch pipeline，优先级2
 }
 AUTOTHROTTLE_ENABLED = True
 AUTOTHROTTLE_START_DELAY = 1       # 初始请求间隔
@@ -101,3 +101,4 @@ AUTOTHROTTLE_MAX_DELAY = 5         # 最长延迟
 AUTOTHROTTLE_TARGET_CONCURRENCY = 1.0  # 目标并发数
 DOWNLOAD_DELAY = 0.5    # 设置固定延迟（在 AutoThrottle 之外再加一点保险）
 CONCURRENT_REQUESTS = 8 # 控制最大并发数（建议保持在 8~16 之间）
+DEPTH_LIMIT = 5

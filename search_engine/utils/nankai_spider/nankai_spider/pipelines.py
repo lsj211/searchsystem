@@ -12,6 +12,9 @@ from itemadapter import ItemAdapter
 #     def process_item(self, item, spider):
 #         return item
 import pymysql
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 class MySQLPipeline:
     def __init__(self):
@@ -30,12 +33,15 @@ class MySQLPipeline:
         self.connection.close()
 
     def process_item(self, item, spider):
+        pub_time = item.get('pub_time')
+        if not pub_time:  # '' 或 None 都成立
+            pub_time = None
         """保存数据到 MySQL"""
         sql = """
         INSERT INTO crawled_articles (title, url, pub_time, content, snapshot_path, anchor, type)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
         """
-        self.cursor.execute(sql, (item['title'], item['url'], item['pub_time'], item['content'], item['snapshot_path'], item['anchor'], item['type']))
+        self.cursor.execute(sql, (item['title'], item['url'], pub_time, item['content'], item['snapshot_path'], item['anchor'], item['type']))
         self.connection.commit()
         return item
 
@@ -55,11 +61,14 @@ class ElasticsearchPipeline:
 
     def process_item(self, item, spider):
         """将数据索引到 Elasticsearch"""
+        pub_time = item.get('pub_time')
+        if not pub_time:
+            pub_time = None
         # 构建索引文档
         doc = {
             "title": item['title'],
             "url": item['url'],
-            "pub_time": item['pub_time'],
+            "pub_time": pub_time,
             "content": item['content'],
             "snapshot_path": item.get('snapshot_path', ""),
             "anchor": item.get('anchor', ""),

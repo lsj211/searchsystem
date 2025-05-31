@@ -44,7 +44,7 @@ def create_index_if_not_exists(index_name):
             "properties": {
                 "url": {"type": "keyword"},               # URL 使用 keyword 类型，适合精确匹配
                 "title": {"type": "text", "analyzer": "ik_max_word"},  # 标题使用 text 类型，适合分词查询
-                "pub_time": {"type": "date", "format": "yyyy-MM-dd HH:mm"},  # 发布时间使用 date 类型，格式为“yyyy-MM-dd HH:mm”
+                "pub_time": {"type": "date", "format": "yyyy-MM-dd||yyyy-MM-dd HH:mm||yyyy-MM-dd HH:mm:ss"},  # 发布时间使用 date 类型，格式为“yyyy-MM-dd HH:mm”
                 "content": {"type": "text", "analyzer": "ik_max_word"},  # 文章内容使用 text 类型，适合分词查询
                 "snapshot_path": {"type": "keyword"},     # 快照路径使用 keyword 类型，适合精确匹配
                 "anchor": {"type": "text"},               # 锚文本使用 text 类型，支持分词查询
@@ -66,3 +66,41 @@ def index_document(index, doc_id, document):
 def update_snapshot_path_in_es(url, snapshot_path):
     doc_id = hashlib.md5(url.encode("utf-8")).hexdigest()
     es.update(index="nankai_news", id=doc_id, doc={"doc": {"snapshot_path": snapshot_path}})
+
+
+
+
+# resp = es.search(index="nankai_news", body={"query": {"match_all": {}}, "size": 10})
+
+# for hit in resp["hits"]["hits"]:
+#     print(hit["_source"]["title"], hit["_source"]["url"])
+
+
+#index_name = "nankai_news"  # 你自己的索引名
+
+# # 查询关键词，比如查标题或内容里包含“南开”
+# query = {
+#     "query": {
+#         "multi_match": {
+#             "query": "南开",
+#             "fields": ["title", "content"]
+#         }
+#     },
+#     "size": 2  # 返回5条结果
+# }
+
+# resp = es.search(index=index_name, body=query)
+
+# print(f"共找到 {resp['hits']['total']['value']} 条结果，显示前{len(resp['hits']['hits'])}条：")
+# for hit in resp['hits']['hits']:
+#     source = hit['_source']
+#     print(f"标题: {source.get('title')}")
+#     print(f"链接: {source.get('url')}")
+#     print(f"发布时间: {source.get('pub_time')}")
+#     print(f"内容摘要: {source.get('content')[:100]}...")  # 打印内容前100字
+#     print("-" * 40)
+
+# count_result = es.count(index="nankai_news")
+# print("Document count:", count_result['count'])
+es.delete_by_query(index="nankai_news", body={"query": {"match_all": {}}})
+# es.indices.delete(index="nankai_news")

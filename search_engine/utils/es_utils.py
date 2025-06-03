@@ -76,22 +76,22 @@ def update_snapshot_path_in_es(url, snapshot_path):
 #     print(hit["_source"]["title"], hit["_source"]["url"])
 
 
-#index_name = "nankai_news"  # 你自己的索引名
+index_name = "nankai_news"  # 你自己的索引名
 
-# # 查询关键词，比如查标题或内容里包含“南开”
-# query = {
-#     "query": {
-#         "multi_match": {
-#             "query": "南开",
-#             "fields": ["title", "content"]
-#         }
-#     },
-#     "size": 2  # 返回5条结果
-# }
+# 查询关键词，比如查标题或内容里包含“南开”
+query = {
+    "query": {
+        "multi_match": {
+            "query": "南开",
+            "fields": ["title", "content"]
+        }
+    },
+    "size": 2  # 返回5条结果
+}
 
-# resp = es.search(index=index_name, body=query)
+resp = es.search(index=index_name, body=query)
 
-# print(f"共找到 {resp['hits']['total']['value']} 条结果，显示前{len(resp['hits']['hits'])}条：")
+print(f"共找到 {resp['hits']['total']['value']} 条结果，显示前{len(resp['hits']['hits'])}条：")
 # for hit in resp['hits']['hits']:
 #     source = hit['_source']
 #     print(f"标题: {source.get('title')}")
@@ -100,7 +100,7 @@ def update_snapshot_path_in_es(url, snapshot_path):
 #     print(f"内容摘要: {source.get('content')[:100]}...")  # 打印内容前100字
 #     print("-" * 40)
 
-# count_result = es.count(index="nankai_news")
-# print("Document count:", count_result['count'])
-es.delete_by_query(index="nankai_news", body={"query": {"match_all": {}}})
+count_result = es.count(index="nankai_news")
+print("Document count:", count_result['count'])
+# es.delete_by_query(index="nankai_news", body={"query": {"match_all": {}}})
 # es.indices.delete(index="nankai_news")

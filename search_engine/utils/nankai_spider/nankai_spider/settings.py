@@ -101,4 +101,5 @@ AUTOTHROTTLE_MAX_DELAY = 5         # 最长延迟
 AUTOTHROTTLE_TARGET_CONCURRENCY = 3.0  # 目标并发数
 DOWNLOAD_DELAY = 0.5    # 设置固定延迟（在 AutoThrottle 之外再加一点保险）
 CONCURRENT_REQUESTS = 16 # 控制最大并发数（建议保持在 8~16 之间）
-DEPTH_LIMIT = 12
+DEPTH_LIMIT = 5
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"

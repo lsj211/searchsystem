@@ -124,18 +124,41 @@ import re
 # )
 import re
 
+# news_detail_pattern = re.compile(
+#     r'/doc-[\w]+\.shtml$|'
+#     r'/detail-[\w]+\.d\.html$|'
+#     r'/\d{4}-\d{2}-\d{2}/doc-[\w]+\.shtml$|'
+#     r'/zx/\d{4}-\d{2}-\d{2}/doc-[\w]+\.shtml$'
+# )
+
+import re
+
+# news_detail_pattern = re.compile(
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/doc-[\w]+\.shtml$|'           # /channel/YYYY-MM-DD/doc-xxxx.shtml
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'       # /channel/YYYY-MM-DD/detail-xxxx.d.html
+#     r'/doc-[\w]+\.shtml$|'                                           # /doc-xxxx.shtml
+#     r'/detail-[\w]+\.d\.html$|'                                      # /detail-xxxx.d.html
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$'                # /channel/YYYY-MM-DD/123456789.shtml（8位及以上数字）
+# )
+
+# http://sports.sina.com.cn/global/200004/2137125.shtml
+# news_detail_pattern = re.compile(
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/[a-z]+-[\w]+\.shtml$|'         # /channel/YYYY-MM-DD/任意字母-xxxx.shtml
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'       # /channel/YYYY-MM-DD/detail-xxxx.d.html
+#     r'/[a-z]+-[\w]+\.shtml$|'                                        # /任意字母-xxxx.shtml
+#     r'/detail-[\w]+\.d\.html$|'                                      # /detail-xxxx.d.html
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$'                # /channel/YYYY-MM-DD/123456789.shtml
+# )
+import re
+
 news_detail_pattern = re.compile(
-    r'('
-    r'/system/\d{4}/\d{2}/\d{2}/\d+\.shtml$|'          # /system/2025/06/02/12345.shtml
-    r'\?p=\d+$|'                                       # ?p=12345
-    r'\d{4}/\d{4}/c[\da-z]+/page\.htm$|'               # 2025/2025/c123abc/page.htm
-    r'info/\d+/\d+\.htm$|'                             # info/12345/6789.htm
-    r'/n/\d+\.html$|'                                  # /n/12345.html
-    r'\d{4}-\d{2}-\d{2}/doc-[a-zA-Z0-9]+\.shtml$'      # 2025-06-02/doc-xxxx.shtml
-    r')'
+    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/[a-z]+-[\w]+\.shtml$|'       # /channel/YYYY-MM-DD/任意字母-xxxx.shtml
+    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'     # /channel/YYYY-MM-DD/detail-xxxx.d.html
+    r'/[a-z]+-[\w]+\.shtml$|'                                      # /任意字母-xxxx.shtml
+    r'/detail-[\w]+\.d\.html$|'                                    # /detail-xxxx.d.html
+    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$|'             # /channel/YYYY-MM-DD/123456789.shtml
+    r'/[a-z]+/\d{6}/\d{6,}\.shtml$'                                # /channel/yyyyMM/dddddddd.shtml
 )
-
-
 def is_attachment(url):
     file_extensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", '.rar', '.mp4', '.avi', '.mov','wmv']
     return any(url.lower().endswith(ext) for ext in file_extensions)
@@ -144,70 +167,131 @@ attachment_extensions = ('.pdf', '.doc', '.docx', '.xls', '.xlsx')
 
 from urllib.parse import urlparse, parse_qs, unquote
 
-def is_valid_link(url):
-    invalid_keywords = ['login', 'logout', 'signup', 'register', 'cas', 'auth']
-    url_lower = url.lower()
+# def is_valid_link(url):
+#     invalid_keywords = ['login', 'logout', 'signup', 'register', 'cas', 'auth']
+#     url_lower = url.lower()
 
-    # 先简单判断 URL 本体字符串
+#     # 先简单判断 URL 本体字符串
+#     if any(kw in url_lower for kw in invalid_keywords):
+#         return False
+
+#     # 再判断 URL 的 query 参数内容是否包含登录关键字（解码后）
+#     parsed = urlparse(url)
+#     query_dict = parse_qs(parsed.query)
+#     for param_values in query_dict.values():
+#         for value in param_values:
+#             decoded_value = unquote(value).lower()
+#             if any(kw in decoded_value for kw in invalid_keywords):
+#                 return False
+
+#     return True
+
+def is_valid_link(url):
+    invalid_keywords = [
+        'login', 'logout', 'signup', 'register', 'cas', 'auth', 'passport',
+        'video', 'photo', 'slide', 'blog', 'mail', 'game', 'edu', 'help', 
+        'ad', 'career', 'job', 'vip', 'db.', 'dealer.', 'auto.', 'eladies', 
+        'baby', 'lottery', 'tousu', 'weibo', 'live', 'house', 'zx.', 'jiaju', 'sh.', 'bj.', 'photo.', 'k.', 'i3.sinaimg.cn','livecast','player','realstock'
+    ]
+    url_lower = url.lower()
     if any(kw in url_lower for kw in invalid_keywords):
         return False
-
-    # 再判断 URL 的 query 参数内容是否包含登录关键字（解码后）
-    parsed = urlparse(url)
-    query_dict = parse_qs(parsed.query)
-    for param_values in query_dict.values():
-        for value in param_values:
-            decoded_value = unquote(value).lower()
-            if any(kw in decoded_value for kw in invalid_keywords):
-                return False
-
+    # 可补充更多路径/参数规则
     return True
-
 
 import re
 
 def normalize_pub_time(pub_time_raw):
+    if not pub_time_raw:
+        return None
+    pub_time_raw = pub_time_raw.strip()
+
     # 2025年2月20日 15:30
-    m = re.match(r"(\d{4})年(\d{1,2})月(\d{1,2})日[ ]*(\d{1,2}):(\d{1,2})", pub_time_raw)
+    m = re.search(r"(\d{4})年(\d{1,2})月(\d{1,2})日\s*(\d{1,2}):(\d{1,2})", pub_time_raw)
     if m:
         year, month, day, hour, minute = m.groups()
         return f"{year}-{int(month):02d}-{int(day):02d} {int(hour):02d}:{int(minute):02d}:00"
+
     # 2025年2月20日
-    m = re.match(r"(\d{4})年(\d{1,2})月(\d{1,2})日", pub_time_raw)
+    m = re.search(r"(\d{4})年(\d{1,2})月(\d{1,2})日", pub_time_raw)
     if m:
         year, month, day = m.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
-    # 2025-02-20 15:30
-    m = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})[ ]*(\d{1,2}):(\d{1,2})", pub_time_raw)
+
+    # 2025-02-20 15:30:25 或 2025-02-20 15:30
+    m = re.search(r"(\d{4})-(\d{1,2})-(\d{1,2})[ T]?(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?", pub_time_raw)
     if m:
-        year, month, day, hour, minute = m.groups()
-        return f"{year}-{int(month):02d}-{int(day):02d} {int(hour):02d}:{int(minute):02d}:00"
+        year, month, day, hour, minute, second = m.groups()
+        hour = int(hour) if hour else 0
+        minute = int(minute) if minute else 0
+        second = int(second) if second else 0
+        return f"{year}-{int(month):02d}-{int(day):02d} {hour:02d}:{minute:02d}:{second:02d}"
+
+    # 2025.02.20 15:30:25 或 2025.02.20 15:30
+    m = re.search(r"(\d{4})\.(\d{1,2})\.(\d{1,2})[ ]?(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?", pub_time_raw)
+    if m:
+        year, month, day, hour, minute, second = m.groups()
+        hour = int(hour) if hour else 0
+        minute = int(minute) if minute else 0
+        second = int(second) if second else 0
+        return f"{year}-{int(month):02d}-{int(day):02d} {hour:02d}:{minute:02d}:{second:02d}"
+
+    # 2025/02/20 15:30:25 或 2025/02/20 15:30
+    m = re.search(r"(\d{4})/(\d{1,2})/(\d{1,2})[ ]?(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?", pub_time_raw)
+    if m:
+        year, month, day, hour, minute, second = m.groups()
+        hour = int(hour) if hour else 0
+        minute = int(minute) if minute else 0
+        second = int(second) if second else 0
+        return f"{year}-{int(month):02d}-{int(day):02d} {hour:02d}:{minute:02d}:{second:02d}"
+
     # 2025-02-20
-    m = re.match(r"(\d{4})-(\d{1,2})-(\d{1,2})", pub_time_raw)
+    m = re.search(r"(\d{4})-(\d{1,2})-(\d{1,2})", pub_time_raw)
     if m:
         year, month, day = m.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
+
     # 2025.02.20
-    m = re.match(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", pub_time_raw)
+    m = re.search(r"(\d{4})\.(\d{1,2})\.(\d{1,2})", pub_time_raw)
     if m:
         year, month, day = m.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
+
     # 2025/02/20
-    m = re.match(r"(\d{4})/(\d{1,2})/(\d{1,2})", pub_time_raw)
+    m = re.search(r"(\d{4})/(\d{1,2})/(\d{1,2})", pub_time_raw)
     if m:
         year, month, day = m.groups()
         return f"{year}-{int(month):02d}-{int(day):02d}"
+
+    # ISO格式 2025-06-02T15:30:25Z
+    m = re.search(r"(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})", pub_time_raw)
+    if m:
+        year, month, day, hour, minute, second = m.groups()
+        return f"{year}-{month}-{day} {hour}:{minute}:{second}"
+
     return None
 
 
 class NankaiSpider(scrapy.Spider):
     name = "nankai"
     # allowed_domains = ["nankai.edu.cn"]
-    allowed_domains = ["sina.com.cn"]
+    # allowed_domains = ["sina.com.cn"]
+    allowed_domains = [
+    "news.sina.com.cn",
+    "sports.sina.com.cn",
+    "finance.sina.com.cn",
+    "ent.sina.com.cn",
+    # "www.sina.com.cn",
+    "mil.news.sina.com.cn",
+    "mobile.sina.com.cn",
+    "tech.sina.com.cn",
+    "edu.sina.com.cn"
+    # ...你关心的其他频道
+]
 
     # start_urls = ["https://news.nankai.edu.cn/index.shtml"]
     # start_urls=["https://news.nankai.edu.cn/"]
-    start_urls=["https://news.sina.com.cn/"]
+    start_urls=["https://www.sina.com.cn/"]
 
     # def __init__(self):
     #     self.count = 0
@@ -224,15 +308,7 @@ class NankaiSpider(scrapy.Spider):
         self.pagination_started2 = False
 
 
-    def parse(self, response):
-        # page_url=[f"https://chem.nankai.edu.cn/",f"https://chem.nankai.edu.cn/",f"https://history.nankai.edu.cn/",f"https://cc.nankai.edu.cn/",f"https://finance.nankai.edu.cn/",f"https://economics.nankai.edu.cn/",f"https://shxy.nankai.edu.cn/",f"https://law.nankai.edu.cn/",f"https://math.nankai.edu.cn/",f"https://graduate.nankai.edu.cn/"]
-        # if not self.pagination_started:
-        #     self.pagination_started = True  # 只运行一次
-        #     for url in page_url:
-        #         if not is_urlnavigte_crawled(url):
-        #             save_urlnavigate_to_db(url)
-        #             yield scrapy.Request(url=url, callback=self.parse)
-                    
+    def parse(self, response):           
         if is_urlnavigte_crawled(response.url):
             return
         if self.existing_count+self.crawled_this_run >= self.max_total:
@@ -245,119 +321,52 @@ class NankaiSpider(scrapy.Spider):
         # 这里处理非HTML响应，或者直接跳过
             return
         # raw_links = response.css('a::attr(href)').getall()
-        # if not self.pagination_started:
-        #     self.pagination_started = True  # 只运行一次
-        #     for i in range(999, 0, -1):
-        #         page_id = f"{i:09d}"
-        #         page_url = f"https://news.nankai.edu.cn/mtnk/system/count/0006000/000000000000/000/000/c0006000000000000000_{page_id}.shtml"
-        #         if not is_urlnavigte_crawled(page_url):
-        #             save_urlnavigate_to_db(page_url)
-        #             yield scrapy.Request(url=page_url, callback=self.parse_links)
-
-        # if not self.pagination_started2:
-        #     self.pagination_started2 = True  # 只运行一次
-        #     for i in range(655, 10, -1):
-        #         page_id = f"{i:09d}"
-        #         page_url = f"https://news.nankai.edu.cn/ywsd/system/count//0003000/000000000000/000/000/c0003000000000000000_{page_id}.shtml"
-        #         if not is_urlnavigte_crawled(page_url):
-        #             save_urlnavigate_to_db(page_url)
-        #             yield scrapy.Request(url=page_url, callback=self.parse_links)
-                # save_urlnavigate_to_db(page_url)
-                # yield scrapy.Request(url=page_url, callback=self.parse_links)
-        # if not self.pagination_started2:
-        #     self.pagination_started2 = True  # 只运行一次
-        #     for i in range(113, 0, -1):
-        #         page_id = f"{i:09d}"
-        #         page_url = f"https://zfxy.nankai.edu.cn/index/important_news/{page_id}.shtml"
-        #         if not is_urlnavigte_crawled(page_url):
-        #             save_urlnavigate_to_db(page_url)
-        #             yield scrapy.Request(url=page_url, callback=self.parse_links)
-        # page_url=[f"https://chem.nankai.edu.cn/",f"https://chem.nankai.edu.cn/",f"https://history.nankai.edu.cn/",f"https://cc.nankai.edu.cn/",f"https://finance.nankai.edu.cn/",f"https://economics.nankai.edu.cn/",f"https://shxy.nankai.edu.cn/"]
-        # if not self.pagination_started:
-        #     self.pagination_started = True  # 只运行一次
-        #     for url in page_url:
-        #         if not is_urlnavigte_crawled(url):
-        #             save_urlnavigate_to_db(url)
-        #             yield scrapy.Request(url=url, callback=self.parse_links)
 
         # 过滤空链接、javascript、#、mailto、tel等非http(s)链接
-        # filtered_links = []
-        # for link in raw_links:
-        #     if not link:
-        #         continue
-        #     if link.startswith(('javascript:', '#', 'mailto:', 'tel:')):
-        #         continue
-        #     absolute_link = urljoin(response.url, link)
-        #     parsed = urlparse(absolute_link)
-        #     if parsed.scheme not in ('http', 'https'):
-        #         continue
-        #     filtered_links.append(absolute_link)
-
-        # # 去重
-        # unique_links = list(set(filtered_links))
-        # if self.existing_count+self.crawled_this_run >= self.max_total:
-        #     raise CloseSpider('reach_max_items')
-
-        # for link in unique_links:
-        #     # === 附件（PDF/Word等） ===
-        #     if link.lower().endswith(attachment_extensions):
-        #         if self.atrachment_total>self.max_total2:
-        #             continue
-        #         yield scrapy.Request(link, callback=self.parse_attachment)
-        #     elif not is_valid_link(link):
-        #         continue
-        #     # === 新闻详情页（传统） ===
-        #     elif news_detail_pattern.search(link):
-        #         yield scrapy.Request(link, callback=self.parse_article)
-
-        #     # === 其他情况，继续爬链接 ===
-        #     else:
-        #         yield scrapy.Request(link, callback=self.parse)
-
-        seen_links = set()
-        for a in response.css('a[href]'):
-            href = a.attrib['href']
-            if not href:
+        # news_links = [link for link in raw_links if news_detail_pattern.search(link)]
+        # print(f"提取到新闻详情页链接数量: {len(news_links)}")
+        filtered_links = []
+        for link in raw_links:
+            if not link:
                 continue
-            if href.startswith(('javascript:', '#', 'mailto:', 'tel:')):
+            if link.startswith(('javascript:', '#', 'mailto:', 'tel:')):
                 continue
-            abs_link = urljoin(response.url, href)
-            parsed = urlparse(abs_link)
+            absolute_link = urljoin(response.url, link)
+            parsed = urlparse(absolute_link)
             if parsed.scheme not in ('http', 'https'):
                 continue
-            if abs_link in seen_links:
-                continue
-            seen_links.add(abs_link)
-            anchor_text = a.xpath('string(.)').get(default='').strip()  # 提取锚文本
+            filtered_links.append(absolute_link)
 
+        # 去重
+        unique_links = list(set(filtered_links))
+        if self.existing_count+self.crawled_this_run >= self.max_total:
+            raise CloseSpider('reach_max_items')
+
+        for link in unique_links:
             # === 附件（PDF/Word等） ===
-            if abs_link.lower().endswith(attachment_extensions):
-                if self.attachment_total2 >= self.max_total2:
+            if link.lower().endswith(attachment_extensions):
+                if self.attachment_total2>self.max_total2:
                     continue
-                yield scrapy.Request(
-                    abs_link,
-                    callback=self.parse_attachment,
-                    meta={'anchor': anchor_text}
-                )
-            elif not is_valid_link(abs_link):
+                # yield scrapy.Request(link, callback=self.parse_attachment)
+            elif not is_valid_link(link):
                 continue
             # === 新闻详情页（传统） ===
-            elif news_detail_pattern.search(abs_link):
-                yield scrapy.Request(abs_link, callback=self.parse_article)
+            elif news_detail_pattern.search(link):
+                yield scrapy.Request(link, callback=self.parse_article)
+
             # === 其他情况，继续爬链接 ===
             else:
-                if not is_urlnavigte_crawled(abs_link):
-                    save_urlnavigate_to_db(abs_link)
-                    yield scrapy.Request(abs_link, callback=self.parse)
+                yield scrapy.Request(link, callback=self.parse)
 
 
 
-    def parse_links(self, response):
-        # 提取每页中的新闻详情链接
-        for href in response.css("a::attr(href)").getall():
-            absolute_url = response.urljoin(href)
-            if news_detail_pattern.search(absolute_url):
-                yield scrapy.Request(absolute_url, callback=self.parse_article)
+
+    # def parse_links(self, response):
+    #     # 提取每页中的新闻详情链接
+    #     for href in response.css("a::attr(href)").getall():
+    #         absolute_url = response.urljoin(href)
+    #         if news_detail_pattern.search(absolute_url):
+    #             yield scrapy.Request(absolute_url, callback=self.parse_article)
 
 
     def parse_article(self, response):
@@ -416,14 +425,19 @@ class NankaiSpider(scrapy.Spider):
             content = "\n".join([part.strip() for part in content_parts if part.strip()])
 
         pub_time_xpaths = [
-            # 1. 结构型路径
-            '//*[@id="root"]//span[contains(text(),"20")]/text()',
-            '//*[@id="root"]//td[contains(text(),"20")]/text()',
-            '//table//span[contains(text(),"20")]/text()',
-            '//table//td[contains(text(),"20")]/text()',
-            # 2. 通用结构
-            '//*[@class="time"]/text()',
-            # ...（前面整理过的常用结构路径）
+            '//span[@class="date"]/text()',
+            '//span[@class="time-source"]/text()',
+            '//span[@id="pub_date"]/text()',
+            '//span[@class="time"]/text()',
+            '//div[@class="date-source"]/text()',
+            '//div[@class="titer"]/text()',
+            '//span[@class="date-source"]/text()',
+            '//span[@id="top_bar"]/div/div[2]/span/text()',
+            '//span[contains(@class, "source")]/text()',
+            '//meta[@property="article:published_time"]/@content',
+            '//meta[@name="publishdate"]/@content',
+            '//span[contains(text(),"20")]/text()',
+            '//div[contains(text(),"20")]/text()'
         ]
         pub_time_raw = ""
         for xp in pub_time_xpaths:
@@ -432,22 +446,16 @@ class NankaiSpider(scrapy.Spider):
                 pub_time_raw = pub_time_raw.strip()
                 if pub_time_raw:
                     break
-        # 3. 全页面兜底
+
         if not pub_time_raw:
-            texts = response.xpath('//body//text()').getall()
-            pub_time_raw = "".join(texts)
-        # 4. 用正则提取时间
-        import re
-        pub_time = ""
-        if pub_time_raw:
-            m = re.search(r"\d{4}[-/年.]\d{1,2}[-/月.]\d{1,2}[日]? ?\d{0,2}:?\d{0,2}", pub_time_raw)
+            texts = " ".join(response.xpath('//body//text()').getall())
+            import re
+            m = re.search(r"\d{4}[-/年.]\d{1,2}[-/月.]\d{1,2}[日]?\s*\d{1,2}:?\d{0,2}", texts)
             if m:
-                pub_time = m.group(0)
-        # 提取正文中的链接
-        # 提取正文中所有 a 标签对象
-        pub_time=normalize_pub_time(pub_time)
-        if not pub_time:
-            pub_time = None  # 让MySQL存为NULL
+                pub_time_raw = m.group(0)
+
+        pub_time = normalize_pub_time(pub_time_raw) if pub_time_raw else None
+
         a_tags = response.css(".v_news_content a")
         article_links = []
 

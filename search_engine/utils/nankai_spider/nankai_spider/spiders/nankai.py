@@ -20,7 +20,7 @@ def is_url_crawled(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -36,7 +36,7 @@ def save_url_to_db(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -53,7 +53,7 @@ def is_urlnavigte_crawled(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -69,7 +69,7 @@ def save_urlnavigate_to_db(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -88,7 +88,7 @@ def get_crawled_count():
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -151,14 +151,46 @@ import re
 # )
 import re
 
+# news_detail_pattern = re.compile(
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/[a-z]+-[\w]+\.shtml$|'       # /channel/YYYY-MM-DD/任意字母-xxxx.shtml
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'     # /channel/YYYY-MM-DD/detail-xxxx.d.html
+#     r'/[a-z]+-[\w]+\.shtml$|'                                      # /任意字母-xxxx.shtml
+#     r'/detail-[\w]+\.d\.html$|'                                    # /detail-xxxx.d.html
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$|'             # /channel/YYYY-MM-DD/123456789.shtml
+#     r'/[a-z]+/\d{6}/\d{6,}\.shtml$|'       # /channel/yyyyMM/dddddddd.shtml
+#     r'\d+/\d{8}/\d+\.html$|'
+#     r'[\w\-]+/\d{4}-\d{2}-\d{2}/doc-[\w\d]+\.shtml$'                                       
+# )
+
+# news_detail_pattern = re.compile(
+#     r'(/system/\d{4}/\d{2}/\d{2}/\d+\.shtml$|'
+#     r'\?p=\d+$|'
+#     r'\d{4}/\d{4}/c[\da-z]+/page\.htm$|'
+#     r'info/\d+/\d+\.htm$|'
+#     r'/n/\d+\.html$)'
+# )
 news_detail_pattern = re.compile(
-    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/[a-z]+-[\w]+\.shtml$|'       # /channel/YYYY-MM-DD/任意字母-xxxx.shtml
-    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'     # /channel/YYYY-MM-DD/detail-xxxx.d.html
-    r'/[a-z]+-[\w]+\.shtml$|'                                      # /任意字母-xxxx.shtml
-    r'/detail-[\w]+\.d\.html$|'                                    # /detail-xxxx.d.html
-    r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$|'             # /channel/YYYY-MM-DD/123456789.shtml
-    r'/[a-z]+/\d{6}/\d{6,}\.shtml$'                                # /channel/yyyyMM/dddddddd.shtml
+    r'/system/\d{4}/\d{2}/\d{2}/\d+\.shtml$|'  # 原有模式1：/system/年/月/日/数字.shtml
+    r'\?p=\d+$|'                                # 原有模式2：?p=数字
+    r'\d{4}/\d{4}/c[\da-z]+/page\.htm$|'        # 原有模式3：年/年/c字母数字/page.htm
+    r'info/\d+/\d+\.htm$|'                      # 原有模式4：info/数字/数字.htm
+    r'/n/\d+\.html$|'                           # 原有模式5：/n/数字.html
+    r'/news/content/id/\d+\.html$|'
+    r'/news/content/id/[\d-]+\.html$|'             # 新增模式：/news/content/id/数字.html
+    r'\d{4}-\d{2}-\d{2}/\d+\.html$'
 )
+
+# news_detail_pattern = re.compile(
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/[a-z]+-[\w]+\.shtml$|'
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/detail-[\w]+\.d\.html$|'
+#     r'/[a-z]+-[\w]+\.shtml$|'
+#     r'/detail-[\w]+\.d\.html$|'
+#     r'/(?:[\w\-]+/)?\d{4}-\d{2}-\d{2}/\d{8,}\.shtml$|'
+#     r'/[a-z]+/\d{6}/\d{6,}\.shtml$|'
+#     r'\d+/\d{8}/\d+\.html$|'
+#     r'[\w\-]+/\d{4}-\d{2}-\d{2}/doc-[\w\d]+\.shtml$|'
+#     r'[\w\-]+/article/[A-Z0-9]+\.html$'
+# )
 def is_attachment(url):
     file_extensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", '.rar', '.mp4', '.avi', '.mov','wmv']
     return any(url.lower().endswith(ext) for ext in file_extensions)
@@ -189,7 +221,7 @@ from urllib.parse import urlparse, parse_qs, unquote
 def is_valid_link(url):
     invalid_keywords = [
         'login', 'logout', 'signup', 'register', 'cas', 'auth', 'passport',
-        'video', 'photo', 'slide', 'blog', 'mail', 'game', 'edu', 'help', 
+        'video', 'photo', 'slide', 'blog', 'mail', 'game', 'help', 
         'ad', 'career', 'job', 'vip', 'db.', 'dealer.', 'auto.', 'eladies', 
         'baby', 'lottery', 'tousu', 'weibo', 'live', 'house', 'zx.', 'jiaju', 'sh.', 'bj.', 'photo.', 'k.', 'i3.sinaimg.cn','livecast','player','realstock'
     ]
@@ -274,43 +306,51 @@ def normalize_pub_time(pub_time_raw):
 
 class NankaiSpider(scrapy.Spider):
     name = "nankai"
-    # allowed_domains = ["nankai.edu.cn"]
+    allowed_domains = ["nankai.edu.cn"]
     # allowed_domains = ["sina.com.cn"]
-    allowed_domains = [
-    "news.sina.com.cn",
-    "sports.sina.com.cn",
-    "finance.sina.com.cn",
-    "ent.sina.com.cn",
-    # "www.sina.com.cn",
-    "mil.news.sina.com.cn",
-    "mobile.sina.com.cn",
-    "tech.sina.com.cn",
-    "edu.sina.com.cn"
-    # ...你关心的其他频道
-]
+#     allowed_domains = [
+#     "news.sina.com.cn",
+#     "sports.sina.com.cn",
+#     "finance.sina.com.cn",
+#     "ent.sina.com.cn",
+#     "www.sina.com.cn",
+#     "mil.news.sina.com.cn",
+#     "mobile.sina.com.cn",
+#     "tech.sina.com.cn",
+#     "edu.sina.com.cn",
+#     "fashion.sina.com.cn",
+#     # "blog.sina.com.cn"
+#     # ...你关心的其他频道
+# ]
+
 
     # start_urls = ["https://news.nankai.edu.cn/index.shtml"]
+    start_urls=["https://www.nankai.edu.cn/main.htm"]
     # start_urls=["https://news.nankai.edu.cn/"]
-    start_urls=["https://www.sina.com.cn/"]
-
+    # start_urls=["https://chem.nankai.edu.cn/"]
+    # start_urls=["https://www.sina.com.cn/"]
+    # start_urls=["https://www.163.com/"]
+    
+    # start_urls=["https://mil.news.sina.com.cn/"]
     # def __init__(self):
     #     self.count = 0
     #     self.max_count = 2
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.max_total = 100500
+        self.max_total = 101500
         self.max_total2 = 10
         self.attachment_total2=0
         self.existing_count = get_crawled_count()
         self.crawled_this_run = 0
         self.pagination_started = False
         self.pagination_started2 = False
+        self.pagination_started3 = False
 
 
     def parse(self, response):           
-        if is_urlnavigte_crawled(response.url):
-            return
+        # if is_urlnavigte_crawled(response.url):
+        #     return
         if self.existing_count+self.crawled_this_run >= self.max_total:
             raise CloseSpider('reach_max_items')
         content_type = response.headers.get('Content-Type', b'').decode('utf-8').lower()
@@ -321,11 +361,52 @@ class NankaiSpider(scrapy.Spider):
         # 这里处理非HTML响应，或者直接跳过
             return
         # raw_links = response.css('a::attr(href)').getall()
+        # if not self.pagination_started:
+        #     self.pagination_started = True  # 只运行一次
+        #     for i in range(999, 700, -1):
+        #         page_id = f"{i:09d}"
+        #         page_url = f"https://news.nankai.edu.cn/mtnk/system/count/0006000/000000000000/000/000/c0006000000000000000_{page_id}.shtml"
+        #         yield scrapy.Request(url=page_url, callback=self.parse_links)
+        #         # raw_links = response.css('a::attr(href)').getall()
+
+        # if not self.pagination_started2:
+        #     self.pagination_started2 = True  # 只运行一次
+        #     for i in range(500, 350, -1):
+        #         page_id = f"{i:09d}"
+        #         page_url = f"https://news.nankai.edu.cn/ywsd/system/count//0003000/000000000000/000/000/c0003000000000000000_{page_id}.shtml"
+        #         yield scrapy.Request(url=page_url, callback=self.parse_links)
+
+        urls=[f"https://chem.nankai.edu.cn/",
+              f"https://zfxy.nankai.edu.cn/",
+              f"https://history.nankai.edu.cn/",
+              f"https://sky.nankai.edu.cn/",
+              f"https://cs.nankai.edu.cn/",
+              f"https://binhai.nankai.edu.cn/",
+              f"https://bs.nankai.edu.cn/",
+              f"https://yzb.nankai.edu.cn/",
+              f"https://economics.nankai.edu.cn/",
+              f"https://law.nankai.edu.cn/",
+              f"https://stat.nankai.edu.cn/",
+              f"https://mse.nankai.edu.cn/",
+              f"https://math.nankai.edu.cn/",
+              f"https://physics.nankai.edu.cn/",
+              f"https://ceo.nankai.edu.cn/",
+              f"https://finance.nankai.edu.cn/",f"https://lib.nankai.edu.cn/",f"https://xgb.nankai.edu.cn/",f"https://zsb.nankai.edu.cn/"]
+        if not self.pagination_started3:
+            self.pagination_started3 = True  # 只运行一次
+            for page_url in urls:
+                if is_urlnavigte_crawled(page_url):
+                    continue
+                save_urlnavigate_to_db(page_url)
+                yield scrapy.Request(url=page_url, callback=self.parse)
+
 
         # 过滤空链接、javascript、#、mailto、tel等非http(s)链接
         # news_links = [link for link in raw_links if news_detail_pattern.search(link)]
         # print(f"提取到新闻详情页链接数量: {len(news_links)}")
         filtered_links = []
+        # print(len(raw_links))
+        # self.logger.info(f"提取到新闻详情页链接数量: {len(raw_links)}")
         for link in raw_links:
             if not link:
                 continue
@@ -343,30 +424,34 @@ class NankaiSpider(scrapy.Spider):
             raise CloseSpider('reach_max_items')
 
         for link in unique_links:
+            
             # === 附件（PDF/Word等） ===
             if link.lower().endswith(attachment_extensions):
-                if self.attachment_total2>self.max_total2:
+                if self.attachment_total2<self.max_total2:
                     continue
-                # yield scrapy.Request(link, callback=self.parse_attachment)
+                    yield scrapy.Request(link, callback=self.parse_attachment)
             elif not is_valid_link(link):
                 continue
             # === 新闻详情页（传统） ===
-            elif news_detail_pattern.search(link):
+            elif news_detail_pattern.search(urlparse(link).path):
                 yield scrapy.Request(link, callback=self.parse_article)
 
             # === 其他情况，继续爬链接 ===
             else:
+                if is_urlnavigte_crawled(link):
+                    continue
+                save_urlnavigate_to_db(link)
                 yield scrapy.Request(link, callback=self.parse)
 
 
 
 
-    # def parse_links(self, response):
-    #     # 提取每页中的新闻详情链接
-    #     for href in response.css("a::attr(href)").getall():
-    #         absolute_url = response.urljoin(href)
-    #         if news_detail_pattern.search(absolute_url):
-    #             yield scrapy.Request(absolute_url, callback=self.parse_article)
+    def parse_links(self, response):
+        # 提取每页中的新闻详情链接
+        for href in response.css("a::attr(href)").getall():
+            absolute_url = response.urljoin(href)
+            if news_detail_pattern.search(absolute_url):
+                yield scrapy.Request(absolute_url, callback=self.parse_article)
 
 
     def parse_article(self, response):
@@ -437,7 +522,7 @@ class NankaiSpider(scrapy.Spider):
             '//meta[@property="article:published_time"]/@content',
             '//meta[@name="publishdate"]/@content',
             '//span[contains(text(),"20")]/text()',
-            '//div[contains(text(),"20")]/text()'
+            '//div[contains(text(),"20")]/text()',
         ]
         pub_time_raw = ""
         for xp in pub_time_xpaths:
@@ -540,7 +625,7 @@ class NankaiSpider(scrapy.Spider):
         filename = re.sub(r'[\\/:"*?<>|]+', "_", filename)
         if not filename:
             filename = "unnamed_attachment"
-
+        filename = unquote(filename)
         save_path = os.path.join("H:/SearchSystem/search_engine/static/attachments", filename)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
@@ -642,3 +727,11 @@ class NankaiSpider(scrapy.Spider):
 # TRUNCATE TABLE crawled_articles;
 # TRUNCATE TABLE crawled_urls;
 # TRUNCATE TABLE crawled_navigateurls;
+
+
+
+
+
+
+
+#转生了

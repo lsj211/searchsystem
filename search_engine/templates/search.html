@@ -1,0 +1,186 @@
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>站内搜索</title>
+</head>
+<body>
+    <h2>站内搜索</h2>
+    <form method="post">
+        <input type="text" name="keyword" placeholder="请输入关键词" value="{{ keyword }}">
+        <input type="submit" value="搜索">
+    </form>
+    <hr>
+    {% if results %}
+        <ul>
+        {% for row in results %}
+            <li>
+                <a href="{{ row.url }}" target="_blank">{{ row.title }}</a>
+                ({{ row.pub_time }})
+            </li>
+        {% endfor %}
+        </ul>
+    {% elif keyword %}
+        <p>没有找到相关内容。</p>
+    {% endif %}
+</body>
+</html> -->
+
+
+<!-- <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>站内搜索</title>
+</head>
+<body>
+    <h2>站内搜索</h2>
+    <form method="post">
+        <label for="query_type">查询类型：</label>
+        <select name="query_type" id="query_type">
+            <option value="web" {% if query_type == 'web' %}selected{% endif %}>网页查询</option>
+            <option value="doc" {% if query_type == 'doc' %}selected{% endif %}>文档查询</option>
+        </select>
+        <input type="text" name="keyword" placeholder="请输入关键词" value="{{ keyword }}">
+        <input type="submit" value="搜索">
+    </form>
+    <hr>
+    {% if results %}
+        <ul>
+        {% for row in results %}
+            <li>
+                <a href="{{ row.url }}" target="_blank">{{ row.title }}</a>
+                ({{ row.pub_time }})
+            </li>
+        {% endfor %}
+        </ul>
+    {% elif keyword %}
+        <p>没有找到相关内容。</p>
+    {% endif %}
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>站内搜索</title>
+    <style>
+    #history-box div:hover {
+    background-color: #f0f0f0;
+    }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const input = document.getElementById('keyword');
+            const box = document.getElementById('history-box');
+
+            // input.addEventListener('focus', function () {
+            //     fetch('/search_history')
+            //         .then(response => response.json())
+            //         .then(data => {
+            //             console.log(data)
+            //             box.innerHTML = '';
+            //             if (data.length > 0) {
+            //                 box.style.display = 'block';
+            //                 data.forEach(item => {
+            //                     const div = document.createElement('div');
+            //                     div.textContent = item;
+            //                     div.style.padding = '5px';
+            //                     div.style.cursor = 'pointer';
+            //                     div.addEventListener('click', () => {
+            //                         input.value = item;
+            //                         box.style.display = 'none';
+            //                     });
+            //                     box.appendChild(div);
+            //                 });
+            //             }
+            //         });
+            // });
+            input.addEventListener('focus', function () {
+            const rect = input.getBoundingClientRect();  // 获取输入框位置和大小
+            box.style.position = 'absolute';
+            box.style.top = rect.bottom + window.scrollY + 'px';
+            box.style.left = rect.left + window.scrollX + 'px';
+            box.style.width = rect.width + 'px';  // 设置宽度与输入框一致
+
+            fetch('/search_history')
+                .then(response => response.json())
+                .then(data => {
+                    box.innerHTML = '';
+                    if (data.length > 0) {
+                        box.style.display = 'block';
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.textContent = item;
+                            div.style.padding = '5px';
+                            div.style.cursor = 'pointer';
+                            div.addEventListener('click', () => {
+                                input.value = item;
+                                box.style.display = 'none';
+                            });
+                            box.appendChild(div);
+                        });
+                    }
+                });
+            });
+            // 点击其他地方关闭提示框
+            document.addEventListener('click', function (e) {
+                if (!box.contains(e.target) && e.target !== input) {
+                    box.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+</head>
+<body>
+    <h2>站内搜索</h2>
+    <form method="post">
+        <label for="query_type">查询类型：</label>
+        <select name="query_type" id="query_type">
+            <option value="web" {% if query_type == 'web' %}selected{% endif %}>网页查询</option>
+            <option value="doc" {% if query_type == 'doc' %}selected{% endif %}>文档查询</option>
+        </select>
+
+        <!-- <input type="text" name="keyword" placeholder="请输入关键词" value="{{ keyword }}"> -->
+        <input type="text" id="keyword" name="keyword" placeholder="请输入关键词" value="{{ keyword }}">
+        <div id="history-box" style="border:1px solid #ccc; display:none; position:absolute; background:#fff; z-index:1000;"></div>
+
+        <!-- 新增短语查询选项 -->
+        <label>
+            <input type="checkbox" name="is_phrase" value="true" {% if is_phrase %}checked{% endif %}>
+            短语查询
+        </label>
+        <label>
+            <input type="checkbox" name="is_wildcard" value="true" {% if is_wildcard %}checked{% endif %}>
+            通配符查询
+        </label>
+        <input type="submit" value="搜索">
+    </form>
+    <hr>
+    {% if results %}
+        <ul>
+        {% for row in results %}
+        <!-- <li>
+            <a href="{{ row.url }}" target="_blank">{{ row.title }}</a>
+            {% if row.pub_time %}
+                ({{ row.pub_time }})
+            {% endif %}
+        </li> -->
+        <li>
+            <a href="{{ url_for('save_snapshot', url=row.url) }}" target="_blank">{{ row.title }}</a>
+            {% if row.pub_time %}
+                ({{ row.pub_time }})
+            {% endif %}
+        </li>
+
+        {% endfor %}
+        </ul>
+    {% elif keyword %}
+        <p>没有找到相关内容。</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>注册</title>
+    <style>
+        body { font-family: Arial; }
+        .register-box { width: 300px; margin: 100px auto; padding: 30px; border: 1px solid #eee; border-radius: 5px; }
+        input { width: 100%; margin: 10px 0; padding: 8px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h2>用户注册</h2>
+        <form method="post">
+            <input type="text" name="username" placeholder="用户名" required>
+            <input type="password" name="password" placeholder="密码" required>
+            <input type="submit" value="注册">
+        </form>
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="error">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% endwith %}
+        <p>已有账号？<a href="{{ url_for('login') }}">去登录</a></p>
+    </div>
+</body>
+</html>

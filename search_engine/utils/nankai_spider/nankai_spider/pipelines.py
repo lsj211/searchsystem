@@ -23,7 +23,7 @@ class MySQLPipeline:
             host='localhost',
             user='root',
             password='20050721',
-            database='my_spider_db',
+            database='my_spider_db2',
             charset='utf8mb4'
         )
         self.cursor = self.connection.cursor()
@@ -55,10 +55,14 @@ import hashlib
 class ElasticsearchPipeline:
     def __init__(self):
         # 初始化 Elasticsearch 索引
-        self.index_name = "nankai_news"
+        self.index_name = "nankai_news1"
+        self.count = 0
         # 确保索引存在，如果不存在则创建
         create_index_if_not_exists(self.index_name)
 
+    def close_spider(self, spider):
+        spider.logger.info(f"ElasticsearchPipeline processed {self.count} items.")
+        
     def process_item(self, item, spider):
         """将数据索引到 Elasticsearch"""
         pub_time = item.get('pub_time')
@@ -77,7 +81,7 @@ class ElasticsearchPipeline:
 
         # 使用 URL 的哈希值作为 Elasticsearch 文档的 ID
         doc_id = hashlib.md5(item['url'].encode("utf-8")).hexdigest()
-        
+        self.count += 1
         # 调用工具类中的方法，将文档写入 Elasticsearch
         index_document(self.index_name, doc_id, doc)
         return item

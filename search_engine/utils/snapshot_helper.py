@@ -11,7 +11,7 @@ def is_url_snapshot_saved(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
@@ -27,7 +27,7 @@ def save_url_snapshot(url):
         host='localhost',
         user='root',
         password='20050721',
-        database='my_spider_db',
+        database='my_spider_db2',
         charset='utf8mb4'
     )
     try:
